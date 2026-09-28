@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "public-raw-gate-targets-v1",
+  "dataset": "lmarena-ai/arena-human-preference-140k",
+  "revision": "a9cb587ee0906192dc1fc5e51778282f36c6bf35",
+  "targets": [
+    {
+      "sourceRowId": "490e14b8-93d3-46fd-8e9c-659d33562fb4",
+      "turnIndex": 0
+    },
+    {
+      "sourceRowId": "608fce71-9c76-421c-8d90-0e0d6e486142",
+      "turnIndex": 0
+    },
+    {
+      "sourceRowId": "77d85224-6598-4226-8f7d-d77dd25ba98e",
+      "turnIndex": 0
+    },
+    {
+      "sourceRowId": "8e95d4df-f258-4e7d-a7b5-0eea1378cb38",
+      "turnIndex": 0
+    },
+    {
+      "sourceRowId": "ab3ba69a-fb57-4f56-8d7e-18e0ecbc2430",
+      "turnIndex": 0
+    },
+    {
+      "sourceRowId": "29fdc07c-6102-49ef-be02-9e2d7a556374",
+      "turnIndex": 1
+    },
+    {
+      "sourceRowId": "578d7c9d-3457-4926-9a55-b5146e7ae57a",
+      "turnIndex": 2
+    },
+    {
+      "sourceRowId": "28df6fd3-638c-4bcb-bba7-70230575eca0",
+      "turnIndex": 0
+    },
+    {
+      "sourceRowId": "1b5c7422-6af1-46e0-95fa-521a75daa351",
+      "turnIndex": 0
+    }
+  ]
+}

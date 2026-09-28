@@ -1,0 +1,86 @@
+name: raw duplicate gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/raw-duplicate-gate.yml'
+      - 'scripts/raw_duplicate_gate.py'
+      - 'targets/lane04-requester-pending.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      HF_HUB_DISABLE_XET: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install
+        run: python -m pip install --disable-pip-version-check 'pyarrow>=17,<21' 'huggingface_hub>=0.27,<1'
+
+      - name: Audit
+        run: |
+          python scripts/raw_duplicate_gate.py \
+            --targets targets/lane04-requester-pending.json \
+            --out build/result.json
+
+      - name: Public output guard
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          p = Path("build/result.json")
+          raw = p.read_text(encoding="utf-8")
+          data = json.loads(raw)
+
+          forbidden_keys = {
+              "sourceUserText", "userTurns", "assistantATurns", "assistantBTurns",
+              "prompt", "rawText", "localizedText", "sourceEnglish", "sourceKorean"
+          }
+
+          def walk(v):
+              if isinstance(v, dict):
+                  for k, x in v.items():
+                      if k in forbidden_keys:
+                          raise SystemExit("unsafe output key")
+                      walk(x)
+              elif isinstance(v, list):
+                  for x in v:
+                      walk(x)
+
+          walk(data)
+
+          patterns = [
+              re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I),
+              re.compile(r"\b(?:ghp|gho|ghu|ghs|ghr|github_pat)_[A-Za-z0-9_]{20,}\b"),
+              re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
+              re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+              re.compile(r"\bAIza[0-9A-Za-z_-]{30,}\b"),
+              re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
+          ]
+          if any(p.search(raw) for p in patterns):
+              raise SystemExit("unsafe output pattern")
+          print("public-output-guard: pass")
+          PY
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-duplicate-gate
+          path: build/result.json
+          retention-days: 1
+          compression-level: 9
+          if-no-files-found: error
